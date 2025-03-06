@@ -1,0 +1,62 @@
+#include <stdio.h>//using hash table
+#include <stdlib.h>
+
+typedef struct Node {
+    char data;
+    int count;
+    struct Node* next;
+} Node;
+
+Node* hashTable[256] = {NULL};  // 雜湊表 (ASCII 256 種字元)
+
+// 插入節點 (O(1) 查找)
+void insert(Node** head, char ch) {
+    if (hashTable[(unsigned char)ch] != NULL) {
+        hashTable[(unsigned char)ch]->count++;
+        return;
+    }
+
+    // 建立新節點
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = ch;
+    newNode->count = 1;
+    newNode->next = *head;
+    *head = newNode;
+
+    // 更新 hash table
+    hashTable[(unsigned char)ch] = newNode;
+}
+
+// 輸出 linked list
+void printList(Node* head) {
+    while (head) {
+        printf("%c : %d\n", head->data, head->count);
+        head = head->next;
+    }
+}
+
+// 釋放 linked list
+void freeList(Node* head) {
+    while (head) {
+        Node* temp = head;
+        hashTable[(unsigned char)head->data] = NULL;
+        head = head->next;
+        free(temp);
+    }
+}
+
+int main() {
+    Node* head = NULL;
+    char ch;
+
+    printf("請輸入字元串 (Ctrl+D 結束輸入)：\n");
+    while (scanf(" %c", &ch) != EOF) {
+        insert(&head, ch);
+    }
+
+    printf("\n輸出結果：\n");
+    printList(head);
+
+    freeList(head);
+    return 0;
+}
