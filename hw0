@@ -1,1 +1,72 @@
-hello
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Node {
+    char data;
+    int count;
+    struct Node* next;
+} Node;
+
+// 新增節點到 linked list
+void insert(Node** head, char ch) {
+    Node* current = *head;
+    Node* prev = NULL;
+
+    // 檢查是否已存在相同字元
+    while (current != NULL) {
+        if (current->data == ch) {
+            current->count++;  // 已存在則計數 +1
+            return;
+        }
+        prev = current;
+        current = current->next;
+    }
+
+    // 若不存在則新增節點
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = ch;
+    newNode->count = 1;
+    newNode->next = NULL;
+
+    if (prev == NULL) {
+        *head = newNode;
+    } else {
+        prev->next = newNode;
+    }
+}
+
+// 輸出 linked list 內容
+void printList(Node* head) {
+    Node* current = head;
+    while (current != NULL) {
+        printf("%c : %d\n", current->data, current->count);
+        current = current->next;
+    }
+}
+
+// 釋放 linked list 記憶體
+void freeList(Node* head) {
+    Node* current = head;
+    while (current != NULL) {
+        Node* temp = current;
+        current = current->next;
+        free(temp);
+    }
+}
+
+int main() {
+    Node* head = NULL;
+    char ch;
+
+    printf("請輸入字元串 (Ctrl+D 結束輸入)：\n");
+    while (scanf(" %c", &ch) != EOF) {
+        insert(&head, ch);
+    }
+
+    printf("\n輸出結果：\n");
+    printList(head);
+
+    freeList(head);
+    return 0;
+}
