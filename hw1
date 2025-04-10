@@ -1,0 +1,232 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// 定義 Token 類型
+#define TYPE_TOKEN 1
+#define MAIN_TOKEN 2
+#define IF_TOKEN 3
+#define ELSE_TOKEN 4
+#define WHILE_TOKEN 5
+#define ID_TOKEN 6
+#define LITERAL_TOKEN 7
+#define LEFTPAREN_TOKEN 8
+#define RIGHTPAREN_TOKEN 9
+#define LEFTBRACE_TOKEN 10
+#define RIGHTBRACE_TOKEN 11
+#define ASSIGN_TOKEN 12
+#define EQUAL_TOKEN 13
+#define GREATEREQUAL_TOKEN 14
+#define LESSEQUAL_TOKEN 15
+#define GREATER_TOKEN 16
+#define LESS_TOKEN 17
+#define PLUS_TOKEN 18
+#define MINUS_TOKEN 19
+#define SEMICOLON_TOKEN 20
+
+// Token 結構
+typedef struct {
+    int type;
+    char lexeme[100];
+    int value;
+} Token;
+
+// 檢查是否為字母或下劃線
+int isLetter(char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+
+// 檢查是否為數字
+int isDigit(char c) {
+    return c >= '0' && c <= '9';
+}
+
+// 檢查是否為空白字符
+int isWhitespace(char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+}
+
+// 獲取下一個 Token
+Token getNextToken() {
+    Token token;
+    char lexeme[100] = "";
+    int i = 0;
+    char c;
+    
+    // 跳過空白字符
+    c = getchar();
+    while (isWhitespace(c) && c != EOF) {
+        c = getchar();
+    }
+    
+    if (c == EOF) {
+        token.type = -1;  // EOF token
+        return token;
+    }
+    
+    // 識別標識符或關鍵字
+    if (isLetter(c)) {
+        do {
+            lexeme[i++] = c;
+            c = getchar();
+        } while ((isLetter(c) || isDigit(c)) && i < 99);
+        
+        if (c != EOF) {
+            ungetc(c, stdin);
+        }
+        
+        lexeme[i] = '\0';
+        
+        // 檢查是否為關鍵字
+        if (strcmp(lexeme, "int") == 0) {
+            token.type = TYPE_TOKEN;
+        } else if (strcmp(lexeme, "main") == 0) {
+            token.type = MAIN_TOKEN;
+        } else if (strcmp(lexeme, "if") == 0) {
+            token.type = IF_TOKEN;
+        } else if (strcmp(lexeme, "else") == 0) {
+            token.type = ELSE_TOKEN;
+        } else if (strcmp(lexeme, "while") == 0) {
+            token.type = WHILE_TOKEN;
+        } else {
+            token.type = ID_TOKEN;
+        }
+        
+        strcpy(token.lexeme, lexeme);
+    }
+    // 識別數字
+    else if (isDigit(c)) {
+        int value = 0;
+        do {
+            lexeme[i++] = c;
+            value = value * 10 + (c - '0');
+            c = getchar();
+        } while (isDigit(c) && i < 99);
+        
+        if (c != EOF) {
+            ungetc(c, stdin);
+        }
+        
+        lexeme[i] = '\0';
+        token.type = LITERAL_TOKEN;
+        token.value = value;
+        strcpy(token.lexeme, lexeme);
+    }
+    // 識別運算符和分隔符
+    else {
+        lexeme[i++] = c;
+        
+        switch (c) {
+            case '(':
+                token.type = LEFTPAREN_TOKEN;
+                break;
+            case ')':
+                token.type = RIGHTPAREN_TOKEN;
+                break;
+            case '{':
+                token.type = LEFTBRACE_TOKEN;
+                break;
+            case '}':
+                token.type = RIGHTBRACE_TOKEN;
+                break;
+            case ';':
+                token.type = SEMICOLON_TOKEN;
+                break;
+            case '+':
+                token.type = PLUS_TOKEN;
+                break;
+            case '-':
+                token.type = MINUS_TOKEN;
+                break;
+            case '=':
+                c = getchar();
+                if (c == '=') {
+                    lexeme[i++] = c;
+                    token.type = EQUAL_TOKEN;
+                } else {
+                    if (c != EOF) {
+                        ungetc(c, stdin);
+                    }
+                    token.type = ASSIGN_TOKEN;
+                }
+                break;
+            case '>':
+                c = getchar();
+                if (c == '=') {
+                    lexeme[i++] = c;
+                    token.type = GREATEREQUAL_TOKEN;
+                } else {
+                    if (c != EOF) {
+                        ungetc(c, stdin);
+                    }
+                    token.type = GREATER_TOKEN;
+                }
+                break;
+            case '<':
+                c = getchar();
+                if (c == '=') {
+                    lexeme[i++] = c;
+                    token.type = LESSEQUAL_TOKEN;
+                } else {
+                    if (c != EOF) {
+                        ungetc(c, stdin);
+                    }
+                    token.type = LESS_TOKEN;
+                }
+                break;
+            default:
+                token.type = -2;  // 未知 token
+        }
+        
+        lexeme[i] = '\0';
+        strcpy(token.lexeme, lexeme);
+    }
+    
+    return token;
+}
+
+// 獲取 Token 類型的字符串表示
+const char* getTokenTypeName(int type) {
+    switch (type) {
+        case TYPE_TOKEN: return "TYPE_TOKEN";
+        case MAIN_TOKEN: return "MAIN_TOKEN";
+        case IF_TOKEN: return "IF_TOKEN";
+        case ELSE_TOKEN: return "ELSE_TOKEN";
+        case WHILE_TOKEN: return "WHILE_TOKEN";
+        case ID_TOKEN: return "ID_TOKEN";
+        case LITERAL_TOKEN: return "LITERAL_TOKEN";
+        case LEFTPAREN_TOKEN: return "LEFTPAREN_TOKEN";
+        case RIGHTPAREN_TOKEN: return "RIGHTPAREN_TOKEN";
+        case LEFTBRACE_TOKEN: return "LEFTBRACE_TOKEN";
+        case RIGHTBRACE_TOKEN: return "RIGHTBRACE_TOKEN";
+        case ASSIGN_TOKEN: return "ASSIGN_TOKEN";
+        case EQUAL_TOKEN: return "EQUAL_TOKEN";
+        case GREATEREQUAL_TOKEN: return "GREATEREQUAL_TOKEN";
+        case LESSEQUAL_TOKEN: return "LESSEQUAL_TOKEN";
+        case GREATER_TOKEN: return "GREATER_TOKEN";
+        case LESS_TOKEN: return "LESS_TOKEN";
+        case PLUS_TOKEN: return "PLUS_TOKEN";
+        case MINUS_TOKEN: return "MINUS_TOKEN";
+        case SEMICOLON_TOKEN: return "SEMICOLON_TOKEN";
+        case -1: return "EOF";
+        default: return "UNKNOWN";
+    }
+}
+
+int main() {
+    printf("請輸入 C 語言程式碼 (Ctrl+D 結束輸入)：\n");
+    
+    Token token;
+    do {
+        token = getNextToken();
+        if (token.type == -1) break;  // EOF
+        
+        if (token.type == LITERAL_TOKEN) {
+            printf("Token: %s, 類型: %s, 值: %d\n", token.lexeme, getTokenTypeName(token.type), token.value);
+        } else {
+            printf("Token: %s, 類型: %s\n", token.lexeme, getTokenTypeName(token.type));
+        }
+    } while (token.type != -1);
+    
+    return 0;
+}
